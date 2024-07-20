@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 import Game.utils.utils as utils
 from Game.Scripts.tilemap import TileMap
@@ -14,6 +16,7 @@ class Game:
         self.win = pygame.display.set_mode((self.width, self.height))
 
         self.clock = pygame.time.Clock()
+        self.running = True
 
         self.assets = {
             "tiles": {"grass": utils.load_image("Tiles/Grass_Middle.png"),
@@ -21,7 +24,7 @@ class Game:
                       "path": utils.load_image("Tiles/Path_Middle.png"),
                       "farmland_tile": utils.load_tiles((6, 3), "Tiles/FarmLand_Tile.png"),
                       "path_tile": utils.load_tiles((3, 3), "Tiles/Path_Tile.png")},
-            "player": {"player": utils.load_player_sprites("Game/Assets/Player/Player.png", (6, 9)),
+            "player": {"player": utils.SpriteSheet("Game/Assets/Player/Player.png").get_images(64),
                        "player_actions": utils.load_tiles((2, 12), "Player/Player_Actions.png")},
         }
 
@@ -31,16 +34,15 @@ class Game:
         self.player = Player(0, 0, self)
 
     def run(self):
-        running = True
 
-        while running:
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYUP:
-                    self.player.change_img(event)
+                    self.running = False
+                    pygame.quit()
+                    sys.exit()
 
-            self.clock.tick(60)
+            self.clock.tick(24)
 
             self.win.fill((0, 0, 0))
 
