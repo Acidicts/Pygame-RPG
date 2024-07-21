@@ -14,9 +14,19 @@ class TileMap:
             for x in range(self.columns):
                 self.tiles.append(Tile(x * TILE_SIZE, y * TILE_SIZE, self.game.assets["tiles"]["grass"], False))
 
+        for x in range(self.game.width // 48):
+            self.tiles.append(Tile(x * TILE_SIZE, 0 * TILE_SIZE, self.game.assets["tiles"]["cliff_1"], True))
+            self.tiles.append(Tile(x * TILE_SIZE, 18 * TILE_SIZE, self.game.assets["tiles"]["cliff_1"], True))
+
     def draw(self, win):
         for tile in self.tiles:
             tile.draw(win)
+
+    def collide(self, rect):
+        for tile in self.tiles:
+            if tile.collides and rect.colliderect(tile.rect):
+                return True
+        return False
 
 
 class Tile:

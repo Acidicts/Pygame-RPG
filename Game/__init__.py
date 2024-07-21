@@ -19,7 +19,9 @@ class Game:
         self.running = True
 
         self.assets = {
-            "tiles": {"grass": utils.load_image("Tiles/Grass_Middle.png"),
+            "tiles": {"cliff": utils.load_tiles((3, 1), "Tiles/Cliff/Stone_Cliff_1_Tile.png"),
+                      "cliff_1": utils.load_image("Tiles/Cliff/Stone_Cliff_1_1.png", (48, 87)),
+                      "grass": utils.load_image("Tiles/Grass_Middle.png"),
                       "water": utils.load_image("Tiles/Water_Middle.png"),
                       "path": utils.load_image("Tiles/Path_Middle.png"),
                       "farmland_tile": utils.load_tiles((6, 3), "Tiles/FarmLand_Tile.png"),
@@ -31,11 +33,16 @@ class Game:
         self.tile_map = TileMap(self)
         self.tile_map.create_map()
 
-        self.player = Player(0, 0, self)
+        self.player = Player(50, 100, self)
+
+    def draw(self):
+        self.tile_map.draw(self.win)
 
     def run(self):
+        self.draw()
 
         while self.running:
+            pygame.display.set_caption(f"RPG Game - FPS: {int(self.clock.get_fps())}")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -43,10 +50,8 @@ class Game:
                     sys.exit()
 
             self.clock.tick(24)
+            self.draw()
 
-            self.win.fill((0, 0, 0))
-
-            self.tile_map.draw(self.win)
             self.player.update()
 
             pygame.display.update()

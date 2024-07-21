@@ -1,15 +1,30 @@
 import pygame
+import os
 from Game.utils.settings import TILE_SIZE
 
 base_dir = "Game/Assets/"
 
 
-def load_image(name):
+def load_image(name, scale=(TILE_SIZE, TILE_SIZE)):
     img = pygame.image.load(base_dir + name).convert()
-    img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+    img = pygame.transform.scale(img, scale)
     img.set_colorkey((0, 0, 0))
 
     return img
+
+
+def load_images(folder):
+    images = []
+    img_names = []
+    for file in os.listdir(base_dir + folder):
+        file = file.strip(".png")
+        img_names.append(file)
+    for i in range(1, 4):
+        img = pygame.image.load(base_dir + folder + f"/{img_names[i]}.png").convert_alpha()
+        img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+        images.append(img)
+
+    return images
 
 
 def load_tiles(grid, name):
@@ -29,6 +44,7 @@ def load_tiles(grid, name):
 
             tile_surface.blit(img, (0, 0), rect)
             tile_surface = pygame.transform.scale(tile_surface, (TILE_SIZE, TILE_SIZE))
+            tile_surface.set_colorkey((0, 0, 0))
             tiles.append(tile_surface)
 
     return tiles
@@ -48,7 +64,6 @@ class SpriteSheet:
         images = []
         for y in range(self.sprite_sheet.get_height() // 32):
             for x in range(self.sprite_sheet.get_width() // 32):
-
                 images.append(pygame.transform.scale(self.get_image(x * 32, y * 32, 32, 32), (scale, scale)))
         return images
 

@@ -11,10 +11,11 @@ class Player:
         self.img = pygame.transform.scale(self.img, (TILE_SIZE, TILE_SIZE))
 
         self.rect = self.img.get_rect()
-        self.vector = Vector2(self.rect.center)
+        self.collided = False
 
         self.rect.x = x
         self.rect.y = y
+        self.vector = Vector2(self.rect.center)
 
         self.game = game
         self.action = {
@@ -23,8 +24,8 @@ class Player:
             "right": ([6, 7, 8, 9, 10, 11], False),
             "up": ([30, 31, 32, 33, 34, 35], False),
             "down": ([18, 19, 20, 21, 22, 23], False),
-            "right_down": ([24, 25, 26, 27, 28, 29], False),
-            "right_left": ([24, 25, 26, 27, 28, 29], True),
+            "down_right": ([24, 25, 26, 27, 28, 29], False),
+            "down_left": ([24, 25, 26, 27, 28, 29], True),
             "up_left": ([30, 31, 32, 33, 34, 35], True),
             "up_right": ([30, 31, 32, 33, 34, 35], False),
         }
@@ -40,6 +41,9 @@ class Player:
         self.draw()
         self.animation.update()
 
+        self.rect = pygame.rect.Rect(self.vector.x, self.vector.y, TILE_SIZE, TILE_SIZE)
+        self.collided = self.game.tile_map.collide(self.rect)
+
     def draw(self):
         self.img = self.animation.img()
         self.game.win.blit(self.img, self.vector)
@@ -47,61 +51,58 @@ class Player:
     def control(self):
         keys = pygame.key.get_pressed()
 
-        movement = [0, 0]
-
+        movement = Vector2(0, 0)
         if keys[pygame.K_w]:
-            movement[1] -= 5
-
+            movement.y -= 1
         if keys[pygame.K_s]:
-            movement[1] += 5
-
+            movement.y += 1
         if keys[pygame.K_a]:
-            movement[0] -= 5
-
+            movement.x -= 1
         if keys[pygame.K_d]:
-            movement[0] += 5
+            movement.x += 1
 
-        if movement[0] > 0 and movement[1] > 0:
-            if self.mode != "right_down":
-                self.change_mode("right_down")
-
-        if movement[0] < 0 and movement[1] < 0:
-            if self.mode != "up_left":
-                self.change_mode("up_left")
-
-        if movement[0] > 0 > movement[1]:
-            if self.mode != "up_right":
-                self.change_mode("up_right")
-
-        if movement[0] < 0 < movement[1]:
-            if self.mode != "right_left":
-                self.change_mode("right_left")
-
-        if movement[0] == 0 and movement[1] == 0:
+        if movement.length() > 0:
+            movement = movement.normalize() * (5 if not self.collided else -5)
+            predicted_position = self.rect.move(movement.x, movement.y)
+            if not self.game.tile_map.collide(predicted_position):
+                self.vector += movement
+                self.rect.x, self.rect.y = self.vector.x, self.vector.y
+                self.change_mode_based_on_movement(movement)
+            else:
+                if self.mode != "idle":
+                    self.change_mode("idle")
+        else:
             if self.mode != "idle":
                 self.change_mode("idle")
 
-        if movement[0] > 0 == movement[1]:
+    def change_mode_based_on_movement(self, movement):
+        if movement.x > 0 and movement.y == 0:
             if self.mode != "right":
                 self.change_mode("right")
-
-        if movement[0] < 0 == movement[1]:
+        elif movement.x < 0 and movement.y == 0:
             if self.mode != "left":
                 self.change_mode("left")
-
-        if movement[1] > 0 == movement[0]:
+        elif movement.y > 0 and movement.x == 0:
             if self.mode != "down":
                 self.change_mode("down")
-
-        if movement[1] < 0 == movement[0]:
+        elif movement.y < 0 and movement.x == 0:
             if self.mode != "up":
                 self.change_mode("up")
-
-        self.vector += movement
-
-        self.vector.normalize()
+        elif movement.x > 0 and movement.y > 0:
+            if self.mode != "down_right":
+                self.change_mode("down_right")
+        elif movement.x < 0 and movement.y < 0:
+            if self.mode != "up_left":
+                self.change_mode("up_left")
+        elif movement.x > 0 > movement.y:
+            if self.mode != "up_right":
+                self.change_mode("up_right")
+        elif movement.x < 0 < movement.y:
+            if self.mode != "down_left":
+                self.change_mode("down_left")
 
     def change_mode(self, mode):
+        mode = str(mode)
         mode = mode.lower()
         self.mode = mode
 
