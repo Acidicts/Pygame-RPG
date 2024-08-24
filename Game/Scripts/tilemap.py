@@ -22,7 +22,7 @@ class TileMap:
         for tile in self.tiles:
             tile.draw(win)
 
-    def collide(self, rect):
+    def collide(self, rect, pos):
         for tile in self.tiles:
             if tile.collides and rect.colliderect(tile.rect):
                 return True
